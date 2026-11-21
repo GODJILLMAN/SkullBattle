@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🤿 海盗骰子 - 局域网多人</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #ffd700;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .room-select {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .room-select h2 {
+        color: white;
+        margin-bottom: 30px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .input-group label {
+        display: block;
+        color: #aaa;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1em;
+        background: rgba(255, 255, 255, 0.9);
+        text-align: center;
+        letter-spacing: 3px;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+      }
+      .operate-box {
+        display: flex;
+        justify-content: space-evenly;
+      }
+      .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+      }
+      button {
+        padding: 14px 20px;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-create {
+        background: linear-gradient(145deg, #4fc3f7, #2196f3);
+        color: white;
+      }
+
+      .btn-create:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-join {
+        background: linear-gradient(145deg, #66bb6a, #43a047);
+        color: white;
+      }
+
+      .btn-join:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-leave {
+        background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+        color: white;
+      }
+
+      .game-room {
+        display: none;
+      }
+
+      .game-room.active {
+        display: block;
+      }
+      .room-header {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .room-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+
+        flex-wrap: wrap;
+      }
+
+      .room-id {
+        font-size: 1.5em;
+        color: #ffd700;
+        font-weight: bold;
+      }
+
+      .room-id span {
+        color: #aaa;
+        font-size: 0.7em;
+        margin-right: 5px;
+      }
+
+      .player-count {
+        color: #4fc3f7;
+        font-size: 1.1em;
+      }
+
+      .room-controls {
+        display: flex;
+        gap: 10px;
+      }
+
+      .room-controls button {
+        padding: 10px 20px;
+        font-size: 0.9em;
+      }
+      .leaderboard {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .leaderboard h3 {
+        color: #ffd700;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+
+      .leaderboard-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .leaderboard-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+
+      .leaderboard-item:first-child {
+        background: linear-gradient(
+          145deg,
+          rgba(255, 215, 0, 0.3),
+          rgba(255, 170, 0, 0.2)
+        );
+      }
+
+      .leaderboard-item.me {
+        border: 2px solid #4fc3f7;
+      }
+
+      .leaderboard-rank {
+        font-size: 1.3em;
+        font-weight: bold;
+        width: 40px;
+        text-align: center;
+      }
+      .leaderboard-rank.gold {
+        color: #ffd700;
+      }
+
+      .leaderboard-rank.silver {
+        color: #c0c0c0;
+      }
+
+      .leaderboard-rank.bronze {
+        color: #cd7f32;
+      }
+
+      .leaderboard-name {
+        flex: 1;
+        color: white;
+        font-size: 1.1em;
+      }
+
+      .leaderboard-name .me-badge {
+        color: #4fc3f7;
+        font-size: 0.7em;
+        margin-left: 5px;
+      }
+
+      .leaderboard-gold {
+        color: #ffd700;
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      .players-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+      }
+
+      .player-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 10px;
+        transition: all 0.3s ease;
+      }
+      .player-card.me {
+        border: 2px solid #4fc3f7;
+        box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+      }
+
+      .player-card.game-over {
+        opacity: 0.7;
+      }
+
+      .player-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .player-name {
+        font-size: 1.3em;
+        color: white;
+        font-weight: bold;
+      }
+
+      .player-name .me-badge {
+        color: #4fc3f7;
+        font-size: 0.7em;
+        margin-left: 5px;
+      }
+
+      .player-status {
+        font-size: 0.9em;
+        padding: 5px 10px;
+        border-radius: 15px;
+      }
+
+      .player-status.active {
+        background: rgba(76, 175, 80, 0.3);
+        color: #4caf50;
+      }
+
+      .player-status.game-over {
+        background: rgba(244, 67, 54, 0.3);
+        color: #f44336;
+      }
+      .player-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 15px;
+      }
+
+      .player-stat {
+        text-align: center;
+      }
+
+      .player-stat-label {
+        font-size: 0.8em;
+        color: #aaa;
+      }
+
+      .player-stat-value {
+        color: #51e751;
+        font-size: 1.4em;
+        font-weight: bold;
+      }
+
+      .player-stat-value.gold {
+        color: #ffd700;
+      }
+
+      .player-stat-value.dice {
+        color: #4fc3f7;
+      }
+
+      .player-dice-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 15px;
+        min-height: 60px;
+      }
+
+      .player-die {
+        width: 45px;
+        height: 45px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.8em;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .player-die.gold {
+        background: linear-gradient(145deg, #ffd700, #ffaa00);
+        color: #8b6914;
+      }
+
+      .player-die.skull {
+        background: linear-gradient(145deg, #2c3e50, #1a252f);
+        color: #e74c3c;
+      }
+
+      .player-die.rolling {
+        animation: roll 0.3s ease infinite;
+      }
+
+      .player-die.sunk {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+
+      @keyframes roll {
+        0%,
+        100% {
+          transform: rotate(0deg) scale(1);
+        }
+
+        25% {
+          transform: rotate(90deg) scale(1.1);
+        }
+
+        50% {
+          transform: rotate(180deg) scale(1);
+        }
+
+        75% {
+          transform: rotate(270deg) scale(1.1);
+        }
+      }
+      .player-controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .player-controls button {
+        padding: 10px 25px;
+        font-size: 0.9em;
+      }
+
+      .roll-btn {
+        background: linear-gradient(145deg, #4fc3f7, #2196f3);
+        color: white;
+      }
+
+      .roll-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+
+      .roll-btn:disabled {
+        background: #666;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .reset-btn {
+        background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+        color: white;
+      }
+
+      .message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 1em;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          top: -50px;
+          opacity: 0;
+        }
+
+        to {
+          top: 20px;
+          opacity: 1;
+        }
+      }
+
+      .message.success {
+        background: linear-gradient(145deg, #66bb6a, #43a047);
+
+        color: white;
+      }
+
+      .message.error {
+        background: linear-gradient(145deg, #ef5350, #e53935);
+        color: white;
+      }
+
+      .message.info {
+        background: linear-gradient(145deg, #42a5f5, #2196f3);
+        color: white;
+      }
+
+      .game-over-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+      }
+
+      .game-over-modal.show {
+        display: flex;
+      }
+
+      .game-over-content {
+        background: linear-gradient(145deg, #2c3e50, #1a252f);
+        padding: 50px;
+        border-radius: 20px;
+        text-align: center;
+        color: white;
+      }
+
+      .game-over-content h2 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+
+      .game-over-content p {
+        font-size: 1.3em;
+        margin-bottom: 20px;
+      }
+
+      .game-over-content .final-gold {
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1.5em;
+      }
+
+      .connection-status {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 0.9em;
+        z-index: 100;
+      }
+
+      .connection-status.connected {
+        background: rgba(76, 175, 80, 0.3);
+        color: #4caf50;
+      }
+      .connection-status.disconnected {
+        background: rgba(244, 67, 54, 0.3);
+        color: #f44336;
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 1.8em;
+        }
+
+        .room-header {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .players-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      #max-score {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="header">
+        <h1>🎲 海盗骰子-局域网多人</h1>
+        <p style="color: #aaa; margin-top: 10px">
+          与朋友一起玩，看看谁收集的金币最多!
+        </p>
+      </div>
+
+      <div class="room-select" id="room-select">
+        <h2>🎮 选择模式</h2>
+        <div class="input-group">
+          <label>玩家名称</label>
+          <input
+            type="text"
+            id="player-name-input"
+            placeholder="输入你的名字"
+            maxlength="10"
+          />
+        </div>
+        <div class="input-group">
+          <label>房间号（6位数字）</label>
+          <input
+            type="text"
+            id="room-id-input"
+            placeholder="加入房间时请输入"
+            maxlength="6"
+            pattern="\d*"
+          />
+        </div>
+        <div class="input-group operate-box">
+          <button class="btn-create" onclick="createRoom()">创建房间</button>
+          <button class="btn-join" onclick="joinRoom()">加入房间</button>
+        </div>
+        <div
+          style="
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+          "
+        >
+          <p style="color: #aaa; font-size: 0.9em">
+            ℹ 提示：将房间号分享给朋友，让他们在同一局域网访问
+          </p>
+        </div>
+      </div>
+
+      <div class="game-room" id="game-room">
+        <div class="room-header">
+          <div class="room-info">
+            <div class="room-id">
+              <span>房间号：</span>
+              <span id="current-room-id">-------</span>
+            </div>
+            <div class="player-count">
+              🎮 <span id="player-count">0</span> 名玩家
+            </div>
+          </div>
+          <div class="room-controls">
+            <button class="btn-leave" onclick="leaveRoom()">离开房间</button>
+          </div>
+        </div>
+      </div>
+      <div class="leaderboard" style="display: none">
+        <h3>💰 金币排行榜 - <span id="max-score">0</span></h3>
+        <div class="leaderboard-list" id="leaderboard-list"></div>
+      </div>
+      <div class="players-grid" id="players-grid"></div>
+    </div>
+
+    <div class="connection-status disconnected" id="connection-status">
+      📡 未连接
+    </div>
+    <div class="game-over-modal" id="game-over-modal">
+      <div class="game-over-content">
+        <h2>游戏结束!</h2>
+        <p>
+          你总共获得了 <span class="final-gold">final-gold">0</span> 枚金币!
+        </p>
+        <button class="reset-btn" onclick="resetMyGame()">重新开始</button>
+      </div>
+    </div>
+    <script>
+      const TOTAL_DICE = 6;
+      let currentRoomId = null;
+      let myPlayerId = null;
+      let myPlayerName = null;
+      let myGame = null;
+      let allPlayers = new Map();
+      let ws = null;
+      initializePlayerName();
+
+      // 初始化昵称
+      function initializePlayerName() {
+        if (localStorage.getItem("playerName")) {
+          document.querySelector("#player-name-input").value =
+            localStorage.getItem("playerName");
+        } else {
+          const nickName = "玩家" + generatePlayerName();
+          document.querySelector("#player-name-input").value = nickName;
+          localStorage.setItem(
+            "playerName",
+            document.querySelector("#player-name-input").value,
+          );
+        }
+      }
+
+      function setStoragePlayerName() {
+        const playerName = document
+          .getElementById("player-name-input")
+          .value.trim();
+        if (playerName) {
+          localStorage.setItem("playerName", playerName);
+        }
+      }
+
+      function createPlayer(playerId, playerName) {
+        return {
+          playerId: playerId,
+          playerName: playerName,
+          activeDice: [...Array(TOTAL_DICE).keys()],
+          totalGold: 0,
+          round: 0,
+          isRolling: false,
+          gameOver: false,
+          lastUpdate: Date.now(),
+        };
+      }
+
+      function generateRoomId() {
+        return Math.floor(Math.random() * 900000 + 100000).toString();
+      }
+
+      function generatePlayerId() {
+        return (
+          "player_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9)
+        );
+      }
+
+      function generatePlayerName() {
+        return Math.random().toString(36).substr(2, 5);
+      }
+
+      function connectWebSocket() {
+        // 从HTML中读取WebSocket URL（由服务器动态替换）
+        const wsUrl = "YOUR_WEBSOCKET_URL";
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          console.log("WebSocket 已连接");
+          updateConnectionStatus(true);
+        };
+        ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          if (message.roomId !== currentRoomId) return;
+
+          switch (message.type) {
+            case "PLAYER_JOIN":
+              handlePlayerJoin(message);
+              break;
+            case "PLAYER_LEAVE":
+              handlePlayerLeave(message);
+              break;
+            case "PLAYER_UPDATE":
+              // 还原为初始状态
+              const player = allPlayers.get(message.playerId);
+              for (let i = 0; i < TOTAL_DICE; i++) {
+                const dieElement = document.getElementById(
+                  `die-${message.playerId}-${i}`,
+                );
+                if (dieElement) {
+                  const isActive = player.activeDice.includes(i);
+                  const isRolling = player.isRolling && isActive;
+                  dieElement.className = `player-die ${isActive ? "rolling" : "sunk"}`;
+                  dieElement.innerHTML = isActive ? "🎲" : "💀";
+                }
+              }
+              if (message.playerData.isRolling) {
+                break;
+              }
+              handlePlayerUpdate(message);
+              break;
+            case "ROOM_PLAYERS":
+              handleRoomPlayers(message);
+              break;
+            case "MAX_SCORE_UPDATE":
+              document.getElementById("max-score").textContent =
+                message.recorder.score + "_by " + message.recorder.playerName;
+              break;
+            case "ERROR":
+              showMessage(message.message, "error");
+              break;
+          }
+        };
+
+        ws.onclose = () => {
+          console.log("☑️ WebSocket 已断开");
+          updateConnectionStatus(false);
+          // 尝试重新连接
+          setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket 错误:", error);
+        };
+      }
+      function updateConnectionStatus(connected) {
+        const status = document.getElementById("connection-status");
+        status.className = `connection-status ${connected ? "connected" : "disconnected"}`;
+        status.textContent = connected ? "已连接" : "未连接";
+      }
+
+      function createRoom() {
+        const playerName = document
+          .getElementById("player-name-input")
+          .value.trim();
+        if (!playerName) {
+          showMessage("请输入玩家名称!", "error");
+          return;
+        }
+
+        currentRoomId = generateRoomId();
+        myPlayerId = generatePlayerId();
+        myPlayerName = playerName;
+        myGame = createPlayer(myPlayerId, myPlayerName);
+        allPlayers.set(myPlayerId, myGame);
+
+        connectWebSocket();
+        setStoragePlayerName();
+        // 等待连接后发送加入消息
+        const checkConnect = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            clearInterval(checkConnect);
+            ws.send(
+              JSON.stringify({
+                type: "PLAYER_JOIN",
+                roomId: currentRoomId,
+                playerId: myPlayerId,
+                playerName: myPlayerName,
+                timestamp: Date.now(),
+              }),
+            );
+            showGameRoom();
+            renderAllPlayers();
+            updateLeaderboard();
+            showMessage(`房间创建成功！房间号：${currentRoomId}`, "success");
+          }
+        }, 100);
+      }
+
+      function joinRoom() {
+        const playerName = document
+          .getElementById("player-name-input")
+          .value.trim();
+        const roomId = document.getElementById("room-id-input").value.trim();
+
+        if (!playerName) {
+          showMessage("请输入玩家名称!", "error");
+          return;
+        }
+
+        if (!/^\d{6}$/.test(roomId)) {
+          showMessage("请输入 6 位数字的房间号!", "error");
+          return;
+        }
+        setStoragePlayerName();
+        currentRoomId = roomId;
+        myPlayerId = generatePlayerId();
+        myPlayerName = playerName;
+        myGame = createPlayer(myPlayerId, myPlayerName);
+        allPlayers.set(myPlayerId, myGame);
+        connectWebSocket();
+
+        const checkConnect = setInterval(() => {
+          console.log("ws.readyState:");
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            clearInterval(checkConnect);
+            ws.send(
+              JSON.stringify({
+                type: "PLAYER_JOIN",
+                roomId: currentRoomId,
+                playerId: myPlayerId,
+                playerName: myPlayerName,
+                timestamp: Date.now(),
+              }),
+            );
+            showGameRoom();
+            renderAllPlayers();
+            updateLeaderboard();
+            showMessage(`成功加入房间${roomId}!`, "success");
+          }
+        }, 100);
+      }
+      function leaveRoom() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "PLAYER_LEAVE",
+              roomId: currentRoomId,
+              playerId: myPlayerId,
+            }),
+          );
+        }
+
+        currentRoomId = null;
+        myPlayerId = null;
+        myPlayerName = null;
+        myGame = null;
+        allPlayers.clear();
+
+        if (ws) {
+          ws.close();
+          ws = null;
+        }
+
+        document.getElementById("game-room").classList.remove("active");
+        document.getElementById("room-select").style.display = "block";
+        document.getElementById("player-name-input").value = "";
+        document.getElementById("room-id-input").value = "";
+        document.getElementsByClassName("leaderboard")[0].style.display =
+          "none";
+
+        const grid = document.getElementById("players-grid");
+        grid.innerHTML = "";
+
+        showMessage("已离开房间", "info");
+
+        initializePlayerName();
+      }
+      function handlePlayerJoin(message) {
+        if (allPlayers.has(message.playerId)) return;
+        const player = createPlayer(message.playerId, message.playerName);
+        allPlayers.set(message.playerId, player);
+        renderAllPlayers();
+        updateLeaderboard();
+        showMessage(`${player.playerName} 加入了房间!`, "info");
+      }
+
+      function handlePlayerLeave(message) {
+        if (allPlayers.has(message.playerId)) {
+          allPlayers.delete(message.playerId);
+          renderAllPlayers();
+          updateLeaderboard();
+        }
+      }
+
+      function handlePlayerUpdate(message) {
+        if (allPlayers.has(message.playerId)) {
+          const player = allPlayers.get(message.playerId);
+          Object.assign(player, message.playerData);
+          renderPlayerCard(message.playerId, message.playerData.allReset);
+          updateLeaderboard();
+        }
+      }
+
+      function handleRoomPlayers(message) {
+        message.players.forEach((p) => {
+          if (!allPlayers.has(p.playerId)) {
+            const player = createPlayer(p.playerId, p.playerName);
+            allPlayers.set(p.playerId, player);
+          }
+        });
+        renderAllPlayers();
+        updateLeaderboard();
+      }
+
+      async function rollMyDice() {
+        if (myGame.isRolling || myGame.activeDice.length === 0) return;
+
+        myGame.isRolling = true;
+        myGame.round++;
+        renderPlayerCard(myPlayerId);
+        broadcastPlayerUpdate();
+
+        myGame.activeDice.forEach((i) => {
+          const dieElement = document.getElementById(`die-${myPlayerId}-${i}`);
+          if (dieElement) {
+            dieElement.className = "player-die rolling";
+            dieElement.innerHTML = "🎲";
+          }
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const newActiveDice = [];
+        let goldCount = 0;
+        let skullCount = 0;
+
+        for (const i of myGame.activeDice) {
+        //   const result = Math.random() < 5 / 6;
+          const result = Math.random() < 0.95;
+          const dieElement = document.getElementById(`die-${myPlayerId}-${i}`);
+          if (dieElement) {
+            dieElement.className = "player-die";
+            if (result) {
+              dieElement.className += " gold";
+              dieElement.innerHTML = "💰";
+              newActiveDice.push(i);
+              goldCount++;
+              myGame.totalGold++;
+            } else {
+              dieElement.className += " skull";
+              dieElement.innerHTML = "💀";
+              skullCount++;
+            }
+          }
+        }
+
+        myGame.activeDice = newActiveDice;
+        myGame.isRolling = false;
+
+        if (myGame.activeDice.length === 0) {
+          myGame.gameOver = true;
+          setTimeout(() => {
+            document.getElementById("final-gold").textContent =
+              myGame.totalGold;
+            document.getElementById("game-over-modal").classList.add("show");
+          }, 500);
+        }
+        updateLeaderboard();
+        renderPlayerCard(myPlayerId);
+        broadcastPlayerUpdate();
+        // renderAllPlayers();
+      }
+
+      function resetMyGame() {
+        myGame.activeDice = [...Array(TOTAL_DICE).keys()];
+        myGame.totalGold = 0;
+        myGame.round = 0;
+        myGame.isRolling = false;
+        myGame.gameOver = false;
+        document.getElementById("game-over-modal").classList.remove("show");
+        renderPlayerCard(myPlayerId, true);
+        // renderAllPlayers();
+        broadcastPlayerUpdate(true);
+      }
+
+      function broadcastPlayerUpdate(allReset = false) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "PLAYER_UPDATE",
+              roomId: currentRoomId,
+              playerId: myPlayerId,
+              playerData: Object.assign(myGame, { allReset }),
+              timestamp: Date.now(),
+            }),
+          );
+        }
+      }
+      function showGameRoom() {
+        document.getElementById("room-select").style.display = "none";
+        document.getElementById("game-room").classList.add("active");
+        document.getElementById("current-room-id").textContent = currentRoomId;
+        document.getElementsByClassName("leaderboard")[0].style.display =
+          "block";
+      }
+
+      function renderAllPlayers() {
+        const grid = document.getElementById("players-grid");
+        grid.innerHTML = "";
+
+        allPlayers.forEach((player, playerId) => {
+          const isMe = playerId === myPlayerId;
+          const card = document.createElement("div");
+          card.className = `player-card ${isMe ? "me" : ""} ${player.gameOver ? "game-over" : ""}`;
+          card.id = `player-card-${playerId}`;
+
+          let headerHtml = `
+            <div class="player-header">
+              <div class="player-name">
+                ${player.playerName}
+                ${isMe ? '<span class="me-badge">(你)</span>' : ""}
+              </div>
+              <div class="player-status ${player.gameOver ? "game-over" : "active"}">
+                ${player.gameOver ? "❌ 已结束" : "🎲 游戏中"}
+              </div>
+            </div>
+            `;
+
+          let statsHtml = `
+            <div class="player-stats">
+              <div class="player-stat">
+                <div class="player-stat-label">剩余骰子</div>
+                <div class="player-stat-value dice">${player.activeDice.length}</div>
+              </div>
+              <div class="player-stat">
+                <div class="player-stat-label">总金币</div>
+                <div class="player-stat-value gold">${player.totalGold}</div>
+              </div>
+              <div class="player-stat">
+                <div class="player-stat-label">轮次</div>
+                <div class="player-stat-value">${player.round}</div>
+              </div>
+            </div>
+            `;
+          let diceHtml = '<div class="player-dice-container">';
+          for (let i = 0; i < TOTAL_DICE; i++) {
+            const isActive = player.activeDice.includes(i);
+            const isRolling = player.isRolling && isActive;
+            const dieClass = `player-die ${isActive ? (isRolling ? "rolling" : "") : "sunk"}`;
+            const dieContent = isActive ? "🎲" : "💀";
+            diceHtml += `
+                <div class="${dieClass}" id="die-${playerId}-${i}">${dieContent}</div>
+            `;
+          }
+          diceHtml += "</div>";
+
+          let controlsHtml = "";
+          if (isMe) {
+            controlsHtml = `
+            <div class="player-controls">
+                <button class="roll-btn" id="roll-btn-${playerId}" onclick="rollMyDice()">
+                    🎲投掷骰子
+                </button>
+                <button class="reset-btn" onclick="resetMyGame()">
+                    🔄重新开始
+                </button>
+            </div>
+            `;
+          }
+
+          card.innerHTML = headerHtml + statsHtml + diceHtml + controlsHtml;
+          grid.appendChild(card);
+        });
+
+        document.getElementById("player-count").textContent = allPlayers.size;
+      }
+
+      function renderPlayerCard(playerId, allReset) {
+        const player = allPlayers.get(playerId);
+        // if (!player || playerId === myPlayerId) return;
+        if (!player) return;
+
+        const card = document.getElementById(`player-card-${playerId}`);
+        if (!card) return;
+
+        card.className = `player-card ${playerId === myPlayerId ? "me" : ""} ${player.gameOver ? "game-over" : ""}`;
+
+        const statusEl = card.querySelector(".player-status");
+        if (statusEl) {
+          statusEl.className = `player-status ${player.gameOver ? "game-over" : "active"}`;
+          statusEl.textContent = player.gameOver ? "已结束" : "游戏中";
+        }
+
+        // setTimeout(() => {
+        const statValues = card.querySelectorAll(".player-stat-value");
+        if (statValues.length >= 3) {
+          statValues[0].textContent = player.activeDice.length;
+          statValues[1].textContent = player.totalGold;
+          statValues[2].textContent = player.round;
+        }
+
+        for (let i = 0; i < TOTAL_DICE; i++) {
+          const dieElement = document.getElementById(`die-${playerId}-${i}`);
+          if (dieElement) {
+            const isActive = player.activeDice.includes(i);
+            const isRolling = player.isRolling && isActive;
+            dieElement.className = `player-die ${isActive ? (isRolling ? "rolling" : "") : "sunk"}`;
+            if (allReset) {
+              dieElement.innerHTML = "🎲";
+              continue;
+            }
+            dieElement.innerHTML = isActive ? "💰" : "💀";
+          }
+        }
+
+        const rollBtn = document.getElementById(`roll-btn-${playerId}`);
+        if (rollBtn) {
+          rollBtn.disabled = player.isRolling || player.activeDice.length === 0;
+        }
+        // }, 50)
+      }
+
+      function updateLeaderboard() {
+        const list = document.getElementById("leaderboard-list");
+        list.innerHTML = "";
+
+        const sortedPlayers = Array.from(allPlayers.values()).sort(
+          (a, b) => b.totalGold - a.totalGold,
+        );
+
+        sortedPlayers.forEach((player, index) => {
+          const isMe = player.playerid === myPlayerId;
+          const rankClass =
+            index === 0
+              ? "gold"
+              : index === 1
+                ? "silver"
+                : index === 2
+                  ? "bronze"
+                  : "";
+
+          const rankSymbol =
+            index === 0
+              ? "&#0129351;"
+              : index === 1
+                ? "&#0129352;"
+                : index === 2
+                  ? "&#0129353;"
+                  : `#${index + 1}`;
+
+          const item = document.createElement("div");
+          item.className = `leaderboard-item ${isMe ? "me" : ""}`;
+          item.innerHTML = `
+            <div class="leaderboard-rank ${rankClass}">${rankSymbol}</div>
+            <div class="leaderboard-name">
+              ${player.playerName}
+              ${isMe ? '<span class="me-badge">(你)</span>' : ""}
+            </div>
+            <div class="leaderboard-gold">${player.totalGold}</div>
+            `;
+          list.appendChild(item);
+        });
+      }
+
+      function showMessage(text, type = "info") {
+        const msg = document.createElement("div");
+        msg.className = `message ${type}`;
+        msg.textContent = text;
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 3000);
+      }
+      window.addEventListener("beforeunload", () => {
+        if (ws && ws.readyState === WebSocket.OPEN && currentRoomId) {
+          ws.send(
+            JSON.stringify({
+              type: "PLAYER_LEAVE",
+              roomId: currentRoomId,
+              playerId: myPlayerId,
+            }),
+          );
+        }
+      });
+    </script>
+  </body>
+</html>
